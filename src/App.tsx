@@ -11,8 +11,9 @@ function App() {
 
     <BrowserRouter>
       {/* 네비게이션 */}
-      <nav>
-        <Link to="/">홈</Link> | <Link to="/about">소개</Link>
+      <nav className="nav">
+        <Link className="nav_item" to="/">홈</Link>
+        <Link className="nav_item" to="/about">소개</Link>
       </nav>
 
       {/* 라우트 정의 */}
