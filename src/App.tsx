@@ -1,10 +1,9 @@
-import { useState } from 'react'
 import './App.scss'
 import { BrowserRouter, Link, Route, Routes } from 'react-router-dom'
 import Home from './pages/Home.tsx'
+import About from './pages/about.tsx'
 
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
     <>
@@ -20,7 +19,7 @@ function App() {
       {/* 라우트 정의 */}
       <Routes>
         <Route path="/" element={<Home />} />
-        {/* <Route path="/about" element={<About />} /> */}
+        <Route path="/about" element={<About />} />
         {/* <Route path="/history" element={<History />} /> */}
         {/* <Route path="*" element={<NotFound />} /> 없는 경로 처리 */}
       </Routes>
