@@ -1,29 +1,15 @@
-import { useState } from 'react'
-import './App.css'
-import { BrowserRouter, Link, Route, Routes } from 'react-router-dom'
-import Home from './pages/Home.tsx'
+import { GoogleOAuthProvider } from '@react-oauth/google'
+import { BrowserRouter } from 'react-router-dom'
+import { env } from './config/env'
+import AppRoutes from './routes/AppRoutes'
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-
-    <BrowserRouter>
-      {/* 네비게이션 */}
-      <nav className="nav">
-        <Link className="nav_item" to="/">홈</Link>
-        <Link className="nav_item" to="/about">소개</Link>
-      </nav>
-
-      {/* 라우트 정의 */}
-      <Routes>
-        <Route path="/" element={<Home />} />
-        {/* <Route path="/about" element={<About />} /> */}
-        {/* <Route path="*" element={<NotFound />} /> 없는 경로 처리 */}
-      </Routes>
-    </BrowserRouter>
-    </>
+    <GoogleOAuthProvider clientId={env.googleClientId}>
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+    </GoogleOAuthProvider>
   )
 }
 
