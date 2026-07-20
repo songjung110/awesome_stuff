@@ -9,5 +9,3 @@ if (!googleClientId) {
 export const env = {
   googleClientId: googleClientId ?? '',
 } as const
-
-console.log('clientId:', JSON.stringify(env.googleClientId));

@@ -1,13 +1,20 @@
 import { useState } from 'react'
 import GoogleLoginButton from '../../components/auth/GoogleLoginButton'
+import { setAccessToken } from '../../lib/auth/token'
+import { videoCategoryCache } from '../../services/youtube/categoryCache'
+import { validateYouTubeApiKey } from '../../api/youtube/serverProxy'
 import type { GoogleAuthTokenResponse } from '../../types/auth'
+
 
 export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
 
-  const handleSuccess = (response: GoogleAuthTokenResponse) => {
+  const handleSuccess = async (response: GoogleAuthTokenResponse) => {
     setError(null)
-    localStorage.setItem('google_access_token', response.access_token)
+    setAccessToken(response.access_token)
+
+    await validateYouTubeApiKey()
+    await videoCategoryCache.load()
   }
 
   const handleError = () => {
@@ -16,11 +23,11 @@ export default function LoginPage() {
 
   return (
     <main className="flex min-h-svh flex-1 flex-col items-center justify-center px-4">
-      <div className="w-full max-w-sm space-y-8">
+      <div className="w-full space-y-8">
         <div className="space-y-2 text-center">
-          <h1 className="text-2xl font-semibold text-gray-900">로그인</h1>
+          <h1 className="text-2xl font-semibold text-gray-900">Youtube<br/>Favorites Analyzer</h1>
           <p className="text-sm text-gray-500">
-            계속하려면 Google 계정으로 로그인하세요.
+            Youtube 즐겨찾기를 분석하려면 Google 계정으로 로그인하세요.
           </p>
         </div>
 
