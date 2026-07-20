@@ -1,4 +1,5 @@
 import { useGoogleLogin } from '@react-oauth/google'
+import { YOUTUBE_READONLY_SCOPE } from '../../constants/auth'
 import type { GoogleAuthTokenResponse } from '../../types/auth'
 
 interface GoogleLoginButtonProps {
@@ -11,6 +12,7 @@ export default function GoogleLoginButton({
   onError,
 }: GoogleLoginButtonProps) {
   const login = useGoogleLogin({
+    scope: YOUTUBE_READONLY_SCOPE,
     onSuccess: (response) => onSuccess?.(response),
     onError: () => onError?.(),
   })
