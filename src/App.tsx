@@ -5,6 +5,8 @@ import { env } from './config/env'
 import { getAccessToken } from './lib/auth/token'
 import AppRoutes from './routes/AppRoutes'
 import { videoCategoryCache } from './services/youtube/categoryCache'
+import { Provider } from 'react-redux'
+import { store } from './store'
 
 import './App.scss'
 
@@ -19,9 +21,11 @@ function App() {
 
   return (
     <GoogleOAuthProvider clientId={env.googleClientId}>
-      <BrowserRouter>
-        <AppRoutes />
-      </BrowserRouter>
+      <Provider store={store}>
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+      </Provider>
     </GoogleOAuthProvider>
   )
 }
