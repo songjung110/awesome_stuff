@@ -1,13 +1,14 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import GoogleLoginButton from '../../components/auth/GoogleLoginButton'
 import { setAccessToken } from '../../lib/auth/token'
 import { videoCategoryCache } from '../../services/youtube/categoryCache'
 import { validateYouTubeApiKey } from '../../api/youtube/serverProxy'
 import type { GoogleAuthTokenResponse } from '../../types/auth'
 
-
 export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
+  const navigate = useNavigate()
 
   const handleSuccess = async (response: GoogleAuthTokenResponse) => {
     setError(null)
@@ -15,6 +16,7 @@ export default function LoginPage() {
 
     await validateYouTubeApiKey()
     await videoCategoryCache.load()
+    navigate('/dashboard')
   }
 
   const handleError = () => {
