@@ -10,6 +10,7 @@ export type {
   YouTubePlaylistItemListResponse,
 } from './playlistItem'
 export type { YouTubeVideo, YouTubeVideoListResponse } from './video'
+export type { YouTubePlaylist, YouTubePlaylistListResponse } from './playlist'
 export type {
   YouTubeVideoCategory,
   YouTubeVideoCategoryListResponse,

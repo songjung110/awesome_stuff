@@ -13,3 +13,4 @@ export {
   extractCommentTexts,
   listCommentThreads,
 } from './commentThreads'
+export { listPlaylists } from './playlists'

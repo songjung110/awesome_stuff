@@ -1,0 +1,16 @@
+.app-layout {
+  display: block;
+}
+
+.app-layout__content {
+  padding-top: 4rem; /* header height */
+  margin-left: 16rem; /* default lnb width */
+  transition: margin-left 0.2s ease-in-out;
+  min-height: calc(100vh - 4rem);
+  background: #f9fafb;
+  padding: 1.25rem;
+}
+
+.app-layout__content.lnb-collapsed {
+  margin-left: 4rem;
+}
