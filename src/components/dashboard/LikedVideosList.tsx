@@ -3,6 +3,9 @@ interface LikedVideoItem {
   snippet?: {
     title?: string
     videoOwnerChannelTitle?: string
+    resourceId?: {
+      videoId?: string
+    }
     thumbnails?: {
       default?: { url?: string }
       medium?: { url?: string }
@@ -29,9 +32,16 @@ export default function LikedVideosList({ items = [] }: LikedVideosListProps) {
           item?.snippet?.thumbnails?.default?.url ??
           item?.snippet?.thumbnails?.medium?.url ??
           item?.snippet?.thumbnails?.high?.url
+        const videoId = item?.snippet?.resourceId?.videoId
 
         return (
-          <div key={item?.id ?? index} className="rounded-lg border border-gray-200 bg-white p-3 shadow-sm">
+          <a
+            href={videoId ? `https://www.youtube.com/watch?v=${videoId}` : '#'}
+            target={videoId ? '_blank' : undefined}
+            rel={videoId ? 'noopener noreferrer' : undefined}
+            key={item?.id ?? index}
+            className="rounded-lg border border-gray-200 bg-white p-3 shadow-sm"
+          >
             {thumbnailUrl ? (
               <img src={thumbnailUrl} alt={title} className="h-24 w-full rounded-md object-cover" />
             ) : (
@@ -39,11 +49,11 @@ export default function LikedVideosList({ items = [] }: LikedVideosListProps) {
                 썸네일 없음
               </div>
             )}
-            <a href="#" target="_blank" rel="noopener noreferrer" className="mt-3 line-clamp-2 text-left text-sm font-medium text-gray-800">
+            <span className="mt-3 line-clamp-2 text-left text-sm font-medium text-gray-800">
               {title}
-            </a>
+            </span>
             <div className="mt-1 text-left text-xs text-gray-500">{item?.snippet?.videoOwnerChannelTitle || '알 수 없음'}</div>
-          </div>
+          </a>
         )
       })}
     </div>
