@@ -10,13 +10,6 @@ export default function Header() {
       </div>
 
       <div className="ml-auto flex items-center gap-3">
-        <button
-          type="button"
-          aria-label="새로고침"
-          className="rounded-md border px-3 py-1 text-sm text-gray-600 hover:bg-gray-50"
-        >
-          새로고침
-        </button>
 
         <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-sm text-gray-700">
           정

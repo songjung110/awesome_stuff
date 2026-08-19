@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   listSubscriptions,
   listPlaylistItems,
@@ -6,6 +6,7 @@ import {
   listMyChannels,
   getLikesPlaylistId,
 } from '../../api/youtube'
+import LoadingSpinner from '../../components/common/LoadingSpinner'
 import FavoriteLineChart from '../../components/dashboard/FavoriteLineChart'
 import LikedVideosList from '../../components/dashboard/LikedVideosList'
 import SubscriptionList from '../../components/dashboard/SubscriptionList'
@@ -17,18 +18,27 @@ export default function DashboardPage() {
   const likesJson = useAppSelector((s) => s.youtube.likes)
   const chartFavoriteData = useAppSelector((s) => s.youtube.chartFavoriteData)
   const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
+  const [loadingSubscriptions, setLoadingSubscriptions] = useState(false)
+  const [loadingLikes, setLoadingLikes] = useState(false)
+  const [loadingChart, setLoadingChart] = useState(false)
+  const [likesPlaylistId, setLikesPlaylistId] = useState('')
+  const [pageToken, setPageToken] = useState<string | undefined>(undefined)
+  const [nextPageToken, setNextPageToken] = useState<string | undefined>(undefined)
+  const likesJsonRef = useRef(likesJson)
   const dispatch = useAppDispatch()
+
+  useEffect(() => {
+    likesJsonRef.current = likesJson
+  }, [likesJson])
 
   useEffect(() => {
     let mounted = true
 
     async function loadAll() {
-      setLoading(true)
       setError(null)
+      setLoadingSubscriptions(true)
 
       try {
-        // 구독 목록과 재생목록을 동시에 요청해 초기 데이터를 빠르게 불러온다.
         const [subsResp, playlistsResp] = await Promise.all([
           listSubscriptions(),
           listPlaylists(),
@@ -39,22 +49,19 @@ export default function DashboardPage() {
         dispatch(setSubscriptions(subsResp))
         dispatch(setPlaylists(playlistsResp))
 
-        // 내 채널 정보를 기준으로 좋아요 재생목록 ID를 찾고, 해당 재생목록의 영상들을 가져온다.
         const channelsResp = await listMyChannels()
-        const likesPlaylistId = getLikesPlaylistId(channelsResp)
+        const nextLikesPlaylistId = getLikesPlaylistId(channelsResp)
 
-        if (likesPlaylistId) {
-          const likesResp = await listPlaylistItems({ playlistId: likesPlaylistId })
-          if (!mounted) return
-          dispatch(setLikes(likesResp))
-        } else {
-          dispatch(setLikes({ items: [], message: 'Likes playlist not found' }))
-        }
+        if (!mounted) return
+
+        setLikesPlaylistId(nextLikesPlaylistId ?? '')
       } catch (err) {
         console.error(err)
         setError(err instanceof Error ? err.message : String(err))
       } finally {
-        if (mounted) setLoading(false)
+        if (mounted) {
+          setLoadingSubscriptions(false)
+        }
       }
     }
 
@@ -63,15 +70,74 @@ export default function DashboardPage() {
     return () => {
       mounted = false
     }
-  }, [])
+  }, [dispatch])
+
+  useEffect(() => {
+    const playlistId = likesPlaylistId
+
+    if (!playlistId) {
+      dispatch(setLikes({ items: [], message: 'Likes playlist not found' }))
+      setPageToken(undefined)
+      setNextPageToken(undefined)
+      return
+    }
+
+    let mounted = true
+
+    async function loadFavoriteData() {
+      setLoadingLikes(true)
+      setLoadingChart(true)
+      setError(null)
+
+      try {
+        const likesResp = await listPlaylistItems({
+          playlistId,
+          pageToken,
+          maxResults: 50,
+        })
+
+        if (!mounted) return
+
+        const loadedItems = Array.isArray(likesResp?.items) ? likesResp.items : []
+        const previousItems = pageToken
+          ? (Array.isArray(likesJsonRef.current?.items) ? likesJsonRef.current.items : [])
+          : []
+        const mergedItems = pageToken ? [...previousItems, ...loadedItems] : loadedItems
+
+        dispatch(setLikes({ ...likesResp, items: mergedItems }))
+        setNextPageToken(likesResp.nextPageToken)
+      } catch (err) {
+        console.error(err)
+        setError(err instanceof Error ? err.message : String(err))
+      } finally {
+        if (mounted) {
+          setLoadingLikes(false)
+          setLoadingChart(false)
+        }
+      }
+    }
+
+    loadFavoriteData()
+
+    return () => {
+      mounted = false
+    }
+  }, [dispatch, likesPlaylistId, pageToken])
+
+  const handleLoadPreviousLikes = () => {
+    if (!likesPlaylistId || !nextPageToken || loadingLikes) {
+      return
+    }
+
+    setPageToken(nextPageToken)
+  }
 
   const subscriptionItems = Array.isArray(subscriptionsJson?.items) ? subscriptionsJson.items : []
+  const likesItems = Array.isArray(likesJson?.items) ? likesJson.items : []
 
   return (
     <main className="flex min-h-svh flex-1 px-4 pt-4">
       <section className="w-full">
-
-        {loading && <p className="text-sm text-gray-500">로딩 중...</p>}
         {error && (
           <p className="text-sm text-red-600" role="alert">
             {error}
@@ -80,35 +146,56 @@ export default function DashboardPage() {
 
         <div className="space-y-6">
           <div className="flex gap-10">
-          <section className="w-1/3">
-            <h2 className="text-lg text-left font-medium">구독 채널</h2>
-            <SubscriptionList items={subscriptionItems} />
-          </section>
-
-          <section className="w-2/3">
-          
-            <section className="mb-6">
-              <h3 className="text-base font-medium">좋아요 집계 데이터</h3>
-
-              {chartFavoriteData.length > 0 ? (
+            <section className="w-1/3">
+              <h2 className="text-lg text-left font-medium">구독 채널</h2>
+              {loadingSubscriptions ? (
                 <div className="mt-3 rounded border border-gray-200 bg-white p-4">
-                  {/* 날짜별 좋아요 수를 라인 차트로 보여주어 추세를 한눈에 파악할 수 있게 만든다. */}
-                  <FavoriteLineChart data={chartFavoriteData} color="#ff0000" />
+                  <LoadingSpinner label="구독 채널 로딩 중" size="md" />
                 </div>
               ) : (
-                <p className="mt-3 text-sm text-gray-500">집계된 좋아요 데이터가 없습니다.</p>
+                <SubscriptionList items={subscriptionItems} />
               )}
-
-              <pre className="mt-3 max-h-64 overflow-auto rounded border border-gray-200 bg-white p-3 text-sm text-gray-700">
-                {JSON.stringify(chartFavoriteData, null, 2)}
-              </pre>
             </section>
 
-            <h2 className="text-lg text-left font-medium">가장 최근 좋아요 영상</h2>
-            <LikedVideosList items={Array.isArray(likesJson?.items) ? likesJson.items : []} />
+            <section className="w-2/3">
+              <section className="mb-6">
+                <h3 className="text-base font-medium">좋아요 집계 데이터</h3>
 
-          </section>
+                {loadingChart ? (
+                  <div className="mt-3 rounded border border-gray-200 bg-white p-4">
+                    <LoadingSpinner label="좋아요 집계 데이터 로딩 중" size="md" />
+                  </div>
+                ) : chartFavoriteData.length > 0 ? (
+                  <div className="mt-3 rounded border border-gray-200 bg-white p-4">
+                    <FavoriteLineChart data={chartFavoriteData} color="#ff0000" />
+                  </div>
+                ) : (
+                  <p className="mt-3 text-sm text-gray-500">집계된 좋아요 데이터가 없습니다.</p>
+                )}
+              </section>
 
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <h2 className="text-lg text-left font-medium">가장 최근 좋아요 영상</h2>
+                {nextPageToken && (
+                  <button
+                    type="button"
+                    onClick={handleLoadPreviousLikes}
+                    disabled={loadingLikes}
+                    className="rounded border border-blue-500 bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-700 transition hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {loadingLikes ? '로딩 중...' : '이전 50개 데이터 호출'}
+                  </button>
+                )}
+              </div>
+
+              {loadingLikes ? (
+                <div className="mt-3 rounded border border-gray-200 bg-white p-4">
+                  <LoadingSpinner label="좋아요 영상 로딩 중" size="md" />
+                </div>
+              ) : (
+                <LikedVideosList items={likesItems} />
+              )}
+            </section>
           </div>
         </div>
       </section>
