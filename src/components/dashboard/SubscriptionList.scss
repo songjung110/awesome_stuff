@@ -1,0 +1,39 @@
+.c-channel-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    height: calc(100vh - 9.5rem);
+    overflow-y: auto;
+    padding-right: 0.6rem;
+}
+
+.c-channel-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 4rem;
+    padding: 1.2rem 0.8rem;
+    box-sizing: border-box;
+    background: #ffffff;
+    border-radius: 0.6rem;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+    &__thumbnail {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    &__title {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--gray-800);
+    }
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0px 6px 8px rgba(0, 0, 0, 0.1);
+    }
+}
