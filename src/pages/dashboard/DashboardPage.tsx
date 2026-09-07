@@ -8,6 +8,7 @@ import {
 } from '../../api/youtube'
 import LoadingSpinner from '../../components/common/LoadingSpinner'
 import FavoriteLineChart from '../../components/dashboard/FavoriteLineChart'
+import FavoriteWordCloud from '../../components/dashboard/FavoriteWordCloud'
 import LikedVideosList from '../../components/dashboard/LikedVideosList'
 import SubscriptionList from '../../components/dashboard/SubscriptionList'
 import { useAppDispatch, useAppSelector } from '../../store/hooks'
@@ -17,6 +18,7 @@ export default function DashboardPage() {
   const subscriptionsJson = useAppSelector((s) => s.youtube.subscriptions)
   const likesJson = useAppSelector((s) => s.youtube.likes)
   const chartFavoriteData = useAppSelector((s) => s.youtube.chartFavoriteData)
+  const favoriteKeywordText = useAppSelector((s) => s.youtube.favoriteKeywordText)
   const [error, setError] = useState<string | null>(null)
   const [loadingSubscriptions, setLoadingSubscriptions] = useState(false)
   const [loadingLikes, setLoadingLikes] = useState(false)
@@ -147,14 +149,22 @@ export default function DashboardPage() {
         <div className="space-y-6">
           <div className="flex gap-10">
             <section className="w-1/3">
-              <h2 className="text-lg text-left font-medium">구독 채널</h2>
+            <h2 className="text-lg text-left font-medium">가장 최근 좋아요 영상</h2>
+              {loadingLikes ? (
+                <div className="mt-3 rounded border border-gray-200 bg-white p-4">
+                  <LoadingSpinner label="좋아요 영상 로딩 중" size="md" />
+                </div>
+              ) : (
+                <LikedVideosList items={likesItems} />
+              )}
+              {/* <h2 className="text-lg text-left font-medium">구독 채널</h2>
               {loadingSubscriptions ? (
                 <div className="mt-3 rounded border border-gray-200 bg-white p-4">
                   <LoadingSpinner label="구독 채널 로딩 중" size="md" />
                 </div>
               ) : (
                 <SubscriptionList items={subscriptionItems} />
-              )}
+              )} */}
             </section>
 
             <section className="w-2/3">
@@ -174,6 +184,21 @@ export default function DashboardPage() {
                 )}
               </section>
 
+              <section className="mb-6">
+                <h3 className="text-base font-medium">최근 좋아요 트렌드 키워드</h3>
+                {loadingChart ? (
+                  <div className="mt-3 rounded border border-gray-200 bg-white p-4">
+                    <LoadingSpinner label="좋아요 트렌드 키워드 로딩 중" size="md" />
+                  </div>
+                ) : favoriteKeywordText ? (
+                  <div className="mt-3 rounded border border-gray-200 bg-white p-4">
+                    <FavoriteWordCloud text={favoriteKeywordText} />
+                  </div>
+                ) : (
+                  <p className="mt-3 text-sm text-gray-500">집계된 좋아요 키워드가 없습니다.</p>
+                )}
+              </section>
+
               <div className="mb-3 flex items-center justify-between gap-3">
                 <h2 className="text-lg text-left font-medium">가장 최근 좋아요 영상</h2>
                 {nextPageToken && (
@@ -187,14 +212,6 @@ export default function DashboardPage() {
                   </button>
                 )}
               </div>
-
-              {loadingLikes ? (
-                <div className="mt-3 rounded border border-gray-200 bg-white p-4">
-                  <LoadingSpinner label="좋아요 영상 로딩 중" size="md" />
-                </div>
-              ) : (
-                <LikedVideosList items={likesItems} />
-              )}
             </section>
           </div>
         </div>
