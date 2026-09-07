@@ -8,6 +8,7 @@ export interface FavoriteChartPoint {
 
 interface LikedItemSnippet {
   publishedAt?: string
+  title?: unknown
 }
 
 interface LikedItem {
@@ -23,6 +24,7 @@ interface YouTubeState {
   likes: any | null
   playlists: any | null
   chartFavoriteData: FavoriteChartPoint[]
+  favoriteKeywordText: string
 }
 
 // 좋아요 응답에서 날짜별로 영상 수를 집계해 차트에 바로 쓸 수 있는 형태로 변환한다.
@@ -43,11 +45,20 @@ function buildFavoriteChartData(payload: LikedResponse | null | undefined): Favo
     .map(([date, favoriteCount]) => ({ date, favoriteCount }))
 }
 
+function buildFavoriteKeywordText(payload: LikedResponse | null | undefined): string {
+  const items = Array.isArray(payload?.items) ? payload.items : []
+
+  return items
+    .map((item) => String(item?.snippet?.title ?? '제목 없음'))
+    .join(' ')
+}
+
 const initialState: YouTubeState = {
   subscriptions: null,
   likes: null,
   playlists: null,
   chartFavoriteData: [],
+  favoriteKeywordText: '',
 }
 
 const youtubeSlice = createSlice({
@@ -60,6 +71,7 @@ const youtubeSlice = createSlice({
     setLikes(state, action: PayloadAction<any>) {
       state.likes = action.payload
       state.chartFavoriteData = buildFavoriteChartData(action.payload)
+      state.favoriteKeywordText = buildFavoriteKeywordText(action.payload)
     },
     setPlaylists(state, action: PayloadAction<any>) {
       state.playlists = action.payload
@@ -69,6 +81,7 @@ const youtubeSlice = createSlice({
       state.likes = null
       state.playlists = null
       state.chartFavoriteData = []
+      state.favoriteKeywordText = ''
     },
   },
 })

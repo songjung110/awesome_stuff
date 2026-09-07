@@ -1,0 +1,45 @@
+.c-liked-videos-list {
+    margin-top: 0.5rem;
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+    height: calc(100vh - 9.5rem);
+    // height: 60rem;
+    overflow-y: auto;
+}
+
+.c-video-card {
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+    border-radius: 0.6rem;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0px 6px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    &__thumbnail {
+        width: 100%;
+        height: 7rem;
+        border-radius: 0.6rem 0.6rem 0 0;
+        object-fit: cover;
+    }
+
+    &__title {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--gray-800);
+        text-align: left;
+        padding: 0.8rem 0.8rem 0 0.8rem;
+    }
+
+    &__channel {
+        text-align: left;
+        font-size: 0.75rem;
+        color: var(--gray-500);
+        padding: 0 0.8rem 0.8rem 0.8rem;
+    }
+}
